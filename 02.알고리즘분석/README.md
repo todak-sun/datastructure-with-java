@@ -101,14 +101,16 @@ public class MyArrayList<T> implements List<T> {
 ```
 
 ### add 메서드가 true를 반환하는 이유
-공식문서에서는 List의 add메서드가 어떠한 요소룰 추가하는 작업을 통해 내부의 변화가 생긴다면 true를, 그렇지 않다면 false를 리턴해야한다고 설명한다.
-
+add메서드의 역할은 다음과 같다. 
+- 어떠한 요소룰 추가하는 작업을 통해 내부의 변화가 생긴다면 true를, 그렇지 않다면 false를 리턴해야한다.
 때문에 구현체가 이를 어떻게 구현하느냐에 따라 true 또는 false를 리턴하게 될수도 있다. 만약, 필요에 의해 구현한 List의 구현체가 특정한 값(예를들면 null)을 받지 않도록 되어있다면, 요소에 추가하지 않기 때문에 내부 상태의 변화로 이어지지 않고, false를 반환할 것이다.
 
 > 참고 : [공식문서](https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html#add-java.lang.Object-)
 
 ### set 메서드
-공식문서에서는 List의 set 메서드가 특정한 위치에 존재하는 요소를 대체한다고 설명한다. 또, 반환하는 값은 대체하기 전 해당 인덱스에 존재하던 요소로 한다고 설명하고 있다.
+set 메서드의 역할은 다음과 같다.
+- 특정한 위치에 존재하는 요소를 대체한다
+- 반환값은 대체하기 전 해당 인덱스에 존재하던 요소로 한다
 
 따라서, 다음과 같이 구현할 수 있다.
 ```java
@@ -122,3 +124,73 @@ public T set(int index, T element) {
 
 [자바 공식문서](https://docs.oracle.com/javase/8/docs/api/java/util/List.html#set-int-java.lang.Object-)
 
+### indexOf 메서드
+indexOf 메서드의 역할은 다음과 같다.
+- 내부에 존재하는 요소 중 찾고자 하는 값과 같은(여기서의 '같다'는 의미는 equals를 어떻게 구현했느냐에 따라 다르며, 구현을 어떻게 했는지에 따라 비교 대상인 두 객체가 일치하지 않을 수도 있다) 첫 번째(0 인덱스부터 시작해 가장 처음 만난)요소의 인덱스를 반환한다.
+- 만약, 어떤 요소도 존재하지 않는다면 -1을 반환한다.
+- 찾고자 하는 값이 null이라면, null인 i번째 요소가 존재하는 경우 그 인덱스를 반환한다.
+
+
+```java
+@Override
+public int indexOf(Object target) {
+		for (int i = 0; i < size; i++) {
+				if (equals(array[i], target)) {
+						return i;
+				}
+		}
+		return -1;
+}
+
+private boolean equals(Object target, Object element) {
+		if (target == null) {
+				return element == null;
+		} else {
+				return target.equals(element);
+		}
+}
+```
+[자바 공식문서](https://docs.oracle.com/javase/8/docs/api/java/util/List.html#indexOf-java.lang.Object-)
+
+### 오버로딩한 add
+
+오버로딩한 add의 역할은 아래와 같다.
+- 어떤 요소를 리스트 내부의 특정한 위치에 삽입한다.
+- 특정한 위치에 새로운 요소가 삽입되면, 기존 요소들은 오른쪽 방향으로 한 칸씩 미룬다.
+
+```java
+@Override
+public void add(int index, T element) {
+		if (index < 0 || index > size) {
+				throw new IndexOutOfBoundsException();
+		}
+		// add the element to get the resizing
+		add(element);
+
+		// shift the elements
+		for (int i = size - 1; i > index; i--) {
+				array[i] = array[i - 1];
+		}
+		// put the new one in the right place
+		array[index] = element;
+}
+```
+[자바 공식문서](https://docs.oracle.com/javase/8/docs/api/java/util/List.html#add-int-E-)
+
+### remove 메서드
+- 리스트 내 특정한 위치에 존재하는 요소를 삭제한다.
+- 삭제한 후, 나머지 요소를 왼쪽으로 미뤄 채워넣는다.
+
+```java
+@Override
+public T remove(int index) {
+		T element = get(index);
+		for (int i = index; i < size - 1; i++) {
+				array[i] = array[i + 1];
+		}
+		size--;
+		return element;
+}
+```
+
+[자바 공식문서](https://docs.oracle.com/javase/8/docs/api/java/util/List.html#remove-int-)
